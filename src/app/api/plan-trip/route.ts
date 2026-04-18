@@ -43,7 +43,10 @@ export async function POST(req: Request) {
         estimated_travel_cost: Math.floor(budget * 0.1),
         estimated_activities_cost: Math.floor(budget * 0.15),
         special_recommendations: {
-          food_to_try: [`Local Seafood in ${destination}`, `Famous street snacks`],
+          food_to_try: [
+            { name: `Local Seafood in ${destination}`, average_price: Math.floor(budget * 0.05) },
+            { name: `Famous street snacks`, average_price: Math.floor(budget * 0.02) }
+          ],
           special_activities: [`Surfing at local beaches`, `Night market shopping`],
           cultural_notes: `Immerse yourself in the rich local history of ${destination}.`
         }
@@ -117,7 +120,17 @@ export async function POST(req: Request) {
             special_recommendations: {
               type: Type.OBJECT,
               properties: {
-                food_to_try: { type: Type.ARRAY, items: { type: Type.STRING } },
+                food_to_try: { 
+                  type: Type.ARRAY, 
+                  items: { 
+                    type: Type.OBJECT,
+                    properties: {
+                      name: { type: Type.STRING },
+                      average_price: { type: Type.NUMBER }
+                    },
+                    required: ["name", "average_price"]
+                  } 
+                },
                 special_activities: { type: Type.ARRAY, items: { type: Type.STRING } },
                 cultural_notes: { type: Type.STRING }
               },
@@ -165,7 +178,7 @@ export async function POST(req: Request) {
       required: ["summary", "days"],
     };
 
-    const prompt = `You are an expert travel planner. Create a realistic budget trip.
+    const prompt = `You are an expert travel planner with access to live Google Search functionality. You must create a highly realistic budget trip based on current real-world pricing constraints.
 Destination: ${destination}
 Days: ${days}
 Total Budget: ${budget} ${currency}
@@ -173,13 +186,14 @@ Interests: ${interests.join(", ")}
 
 Requirements:
 - Plan a day-by-day itinerary prioritizing shortest route, low travel cost, and realistic timing.
+- **CRITICAL: Fetch recent data for current average hotel rates, meal costs, and ticket entry prices for ${destination}. Base your calculations on CURRENT market rates rather than historical estimations.**
 - Provide exactly 3 stay_options (Budget, Standard, Luxury) with their individual cost_per_night indicating the resort fee or hotel price. 
 - Ensure the non-hotel base costs (food, travel, activities) leave enough budget for the standard stay_option.
 - Include a list of special favourite foods, sports/activities, and other unique regional must-dos in special_recommendations.
 - All costs MUST be estimated in the local unit of ${currency}.
 - Group nearby attractions to reduce travel time.
 - Provide approximate real-world coordinates (latitude and longitude) for each activity.
-- Output MUST be structured JSON according to the schema provided.
+- Output MUST be structured JSON according to the schema provided. DO NOT include markdown backticks like \`\`\`json. Valid JSON only!
 `;
 
     try {
@@ -195,7 +209,10 @@ Requirements:
       if (!response.text) {
           throw new Error("No response body from AI");
       }
-      return NextResponse.json(JSON.parse(response.text));
+
+      // Safely parse JSON by removing potential markdown backticks that Gemini sometimes injects
+      let cleanText = response.text.replace(/```json/gi, '').replace(/```/g, '').trim();
+      return NextResponse.json(JSON.parse(cleanText));
     } catch (error) {
       console.error("AI Generation failed. Serving geographic fallback data.", error);
       return NextResponse.json(fallbackMockData);

@@ -3,13 +3,18 @@ import React from 'react';
 import { Utensils, Star, Info, Activity } from 'lucide-react';
 import styles from './SpecialRecommendations.module.css';
 
+interface FoodRecommendation {
+  name: string;
+  average_price: number;
+}
+
 interface Recommendations {
-  food_to_try: string[];
+  food_to_try: FoodRecommendation[];
   special_activities: string[];
   cultural_notes: string;
 }
 
-export default function SpecialRecommendations({ recommendations }: { recommendations: Recommendations }) {
+export default function SpecialRecommendations({ recommendations, currencySym }: { recommendations: Recommendations, currencySym: string }) {
   if (!recommendations) return null;
 
   return (
@@ -25,7 +30,10 @@ export default function SpecialRecommendations({ recommendations }: { recommenda
           </div>
           <ul className={styles.list}>
             {recommendations.food_to_try?.map((food, i) => (
-              <li key={i}>{food}</li>
+              <li key={i} className={styles.foodItem}>
+                <span className={styles.foodName}>{food.name}</span>
+                <span className={styles.foodPrice}>{currencySym}{food.average_price}</span>
+              </li>
             ))}
           </ul>
         </div>

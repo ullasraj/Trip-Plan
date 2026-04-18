@@ -64,7 +64,7 @@ export default function TripDashboard({ tripData, currency, onReset }: TripDashb
       />
 
       {tripData.summary.special_recommendations && (
-        <SpecialRecommendations recommendations={tripData.summary.special_recommendations} />
+        <SpecialRecommendations recommendations={tripData.summary.special_recommendations} currencySym={sym} />
       )}
 
       <h1 style={{ fontSize: "2rem", marginBottom: "1.5rem", color: "var(--accent-color)" }}>Your Trip Summary</h1>

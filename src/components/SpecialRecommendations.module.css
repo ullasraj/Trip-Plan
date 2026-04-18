@@ -40,7 +40,29 @@
 }
 
 .list li {
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.8rem;
+}
+
+.foodItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed var(--border-color);
+  padding-bottom: 0.3rem;
+}
+
+.foodName {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.foodPrice {
+  background: var(--bg-secondary);
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-color);
 }
 
 .notes {
